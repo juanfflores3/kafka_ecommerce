@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package servidor;
+
+message PedidoRequest {
+    string nombre_producto = 1;
+    double precio = 2;
+    string cliente_email = 3;
+    string metodo_pago = 4;
+    string banco = 5;
+    string tipo_tarjeta = 6;
+    string calle = 7;
+    string numero = 8;
+    string region = 9;
+}
+
+message Respuesta {
+    string mensaje = 1;
+}
+
+service Servidor {
+    rpc GestionarPedido (PedidoRequest) returns (Respuesta);
+}
