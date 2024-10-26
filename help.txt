@@ -1,0 +1,12 @@
+Eliminar huerfanos de mis contenedores
+    docker compose down -v --remove-orphans
+    docker down -v --remove-orphans
+
+Credenciales correo:
+    sdistribuidos18@gmail.com
+    @SD12345678
+
+Actualizar repositorio
+    git add
+    git commit -m "v2"
+    git push

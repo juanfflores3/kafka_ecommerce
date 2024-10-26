@@ -9,24 +9,22 @@ const kafka = new Kafka({
 const consumer = kafka.consumer({groupId: 'states-group'});
 
 // Creamos el objeto que transporte
-const tranporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
     host: 'live.smtp.mailtrap.io',
     port: 587,
-    secure: false,
     auth: {
-        user: '1a2b3c4d5e6f7g',
-        pass: '1a2b3c4d5e6f7g',
+        user: 'api',
+        pass: '68b56795f8791edad95d9043dfc7cc83',
     }
 });
 
 // Función para enviar correos
 const enviarCorreo = (pedido) => {
+    
     // Configurar el correo a enviar
-    const mail_client = pedido.client_email;
-
     const mailOptions = {
-        from: 'ecommerse@mail.com',
-        to: mail_client,
+        from: 'info@demomailtrap.com',
+        to: pedido.cliente_email,
         subject: 'Actualización estado de tu pedido',
         text: `Hola, tu pedido ${pedido.nombre_producto} ha pasado al estado: ${pedido.status}`
     }
@@ -51,11 +49,15 @@ const iniciarConsumidorKafka = async () => {
     // Leer mensajes de la actualización de un pedido y los procesa
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
-            const pedido = JSON.parse(message.value.toString());
-            console.log(`Mensaje recibido de Kafka en topico ${topic}:`, pedido);
+            try {
+                const pedido = JSON.parse(message.value.toString());
+                console.log(`Mensaje recibido de Kafka en topico ${topic}:`, pedido);
 
-            // Llamar funcion de enviar correo
-            enviarCorreo(pedido);
+                // Llamar funcion de enviar correo
+                enviarCorreo(pedido);
+            } catch(error) {
+                console.error('Error al procesar el mensaje de Kafka: ', error);
+            }
         },
     });
 };
