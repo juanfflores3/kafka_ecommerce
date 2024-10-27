@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@elastic/elasticsearch": "^8.15.1",
     "csv-parser": "^3.0.0",
+    "elasticsearch": "^16.7.3",
     "kafkajs": "^2.2.4"
   }
 }

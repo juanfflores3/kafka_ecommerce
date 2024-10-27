@@ -9,7 +9,10 @@ Credenciales correo:
 Actualizar repositorio
     git add -A
     git commit -m "Actualizado"
-    git push
+    git push origin main
 
 Reiniciar el docker
     sudo systemctl restart docker
+
+Instalar dependencias de elasticsearch
+    npm i @elastic/elasticsearch

@@ -3,9 +3,81 @@ const grpc = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
 const PROTO_PATH = './server.proto'; // Ruta a tu archivo .proto
 const { Kafka } =  require('kafkajs'); // Importar la librería de Kafka
+const { Client } = require('@elastic/elasticsearch'); // Importar la librería de Elasticsearch
+
+////////////////////////////////////////////////////////
+// Elasticsearch
+////////////////////////////////////////////////////////
+
+// Configurar Elasticsearch
+const esClient = new Client({ node: 'http://localhost:9200' });
+
+// Funcion para enviar metricas a Elasticsearch
+const sendMetricsElastic= async (throughput) => {
+  try {
+    const body = {
+      throughput, 
+      timestamp: new Date().toISOString()
+    };
+
+    await esClient.index({
+      index: 'metrics_server', 
+      body: body
+    });
+    console.log('Métricas enviadas a Elasticsearch en el índice metrics_server');
+  } catch (error) {
+    console.error(`Error al enviar métricas a Elasticsearch: ${error}`);
+  }
+};
+
+let ordersProcessed = 0;
+
+// Función para enviar la métrica de Throughput cada minuto
+const startThroughputMetric = () => {
+  setInterval(async () => {
+    // Enviar el throughput de pedidos procesados por minuto
+    await sendMetricsElastic(ordersProcessed);
+    console.log(`Throughput enviado a Elasticsearch: ${ordersProcessed} pedidos/minuto`);
+
+    // Reiniciar el contador de pedidos procesados
+    ordersProcessed = 0; // Reiniciar el contador de pedidos procesados
+  }, 60000);
+};
+
+////////////////////////////////////////////////////////
+// Kafka 
+////////////////////////////////////////////////////////
+
+// Configurar Kafka para conectarse al broker
+const kafka = new Kafka({
+  clientId: 'server',
+  brokers: ['localhost:9092'] // Se conecta al puerto 9092 de Kafka
+});
+
+// Crear un productor de Kafka
+const producer = kafka.producer();
+
+// Inicar el productor de Kafka
+async function startProducerKafka(){
+  await producer.connect();
+  console.log('Conectado al broker de Kafka como productor');
+}
+
+const sendOrders = async (pedido) => {
+  try {
+    await producer.send({
+      topic:'orders',
+      messages: [{ value: JSON.stringify(pedido) }]
+    });
+    console.log('Pedidos enviados a Kafka al tópico orders');
+  } catch (error) {
+    console.error(`Error al enviar el pedido a Kafka: ${error}`);
+  }
+};
 
 ////////////////////////////////////////////////////////
 // gRPC
+////////////////////////////////////////////////////////
 
 // Cargar el archivo .proto
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
@@ -36,48 +108,10 @@ function startServer() {
 }
 
 ////////////////////////////////////////////////////////
-// Kafka 
+// Recibir pedido y enviar a Kafka
+////////////////////////////////////////////////////////
 
-// Configurar Kafka para conectarse al broker
-const kafka = new Kafka({
-  clientId: 'server',
-  brokers: ['localhost:9092'] // Se conecta al puerto 9092 de Kafka
-});
-
-// Crear un productor de Kafka
-const producer = kafka.producer();
-
-// Inicar el productor de Kafka
-async function startProducerKafka(){
-  await producer.connect();
-  console.log('Conectado al broker de Kafka como productor');
-}
-
-const sendOrders = async (pedido) => {
-  try {
-    await producer.send({
-      topic:'orders',
-      messages: [{ value: JSON.stringify(pedido) }]
-    });
-    console.log('Pedidos enviados a Kafka al tópico orders');
-  } catch (error) {
-    console.error(`Error al enviar el pedido a Kafka: ${error}`);
-  }
-};
-
-const sendMetrics = async (pedido) => {
-  try {
-    await producer.send({
-      topic: 'metrics',
-      messages: [{ value: JSON.stringify(pedido) }]
-    });
-    console.log('Métricas enviadas a Kafka al tópico metrics');
-  } catch (error) {
-    console.error(`Error al enviar las métricas a Kafka: ${error}`);
-  }
-};
-
-// Implementar la lógica del servicio gRPC
+// Función para procesar un pedido
 async function processOrder(call, callback) {
   // Crear constante con el pedido a enviar a Kafka
   const order = {
@@ -92,22 +126,25 @@ async function processOrder(call, callback) {
     region: call.request.region,
     timestamp: new Date().toISOString()
   }
-
+  ordersProcessed++; // Incrementar el contador de pedidos procesados
+  
   console.log(`Procesando pedido: ${call.request.nombre_producto}`);
   
   sendOrders(order); // Enviar pedido a Kafka
-  sendMetrics(order); // Enviar métricas a Kafka
+  await sendMetricsElastic(order); // Enviar métricas a Elasticsearch
 
-  // Respuesta simulada
   callback(null, {mensaje: `Pedido procesado correctamente para ${call.request.cliente_email}`});
 }
 
 ////////////////////////////////////////////////////////
 // Main
+////////////////////////////////////////////////////////
 
 async function main() {
   await startProducerKafka(); // Iniciar el productor de Kafka
+  startThroughputMetric();
   startServer(); // Iniciar el servidor gRPC
+  
 }
 
 main();

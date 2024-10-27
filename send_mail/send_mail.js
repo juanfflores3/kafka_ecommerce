@@ -1,8 +1,46 @@
 const nodemailer = require('nodemailer');
 const { Kafka } = require('kafkajs');
+////////////////////////////////////////////////////////
+// Elasticsearch
+////////////////////////////////////////////////////////
 
+// Configurar Elasticsearch
+const esClient = new Client({ node: 'http://localhost:9200'});
+
+// Función para enviar métricas a Elasticsearch
+const sendMetricsElastic = async (throughput) => {
+    try {
+        const body = {
+            throughput,
+            timestamp: new Date().toISOString()
+        };
+        await esClient.index({
+            index: 'metrics_sentmail',
+            body: body
+        });
+        console.log('Métricas enviadas a Elasticsearch en el índice metrics_sentmail');
+    } catch (error) {
+    console.error(`Error al enviar métricas a Elasticsearch: ${error}`);
+    }
+};
+
+let ordersProcessed = 0;
+
+// Función para enviar la métrica de Throughput cada minuto
+const startThroughputMetric = () => {
+    setInterval(async () => {
+      // Enviar el throughput de pedidos procesados por minuto
+      await sendMetricsElastic(ordersProcessed);
+      console.log(`Throughput enviado a Elasticsearch: ${ordersProcessed} pedidos/minuto`);
+  
+      // Reiniciar el contador de pedidos procesados
+      ordersProcessed = 0; // Reiniciar el contador de pedidos procesados
+    }, 60000);
+}
+;
 ////////////////////////////////////////////////////////
 // Kafka
+////////////////////////////////////////////////////////
 
 const kafka = new Kafka({
     clientId: 'mail_states',
@@ -37,6 +75,7 @@ const startConsumerKafka = async () => {
 
 ////////////////////////////////////////////////////////
 // Nodemailer
+////////////////////////////////////////////////////////
 
 // Creamos el objeto que transporte
 const transporter = nodemailer.createTransport({
@@ -50,7 +89,8 @@ const transporter = nodemailer.createTransport({
 
 // Función para enviar correos
 const sendEmail = (order) => {
-    
+    ordersProcessed++; // Incrementar el contador de pedidos procesados
+
     // Configurar el correo a enviar
     const mailOptions = {
         from: 'info@demomailtrap.com',
@@ -70,6 +110,11 @@ const sendEmail = (order) => {
 
 ////////////////////////////////////////////////////////
 // Main
+////////////////////////////////////////////////////////
 
-startConsumerKafka().catch(console.error);
+async function main() {
+    await startConsumerKafka().catch(console.error);
+    startThroughputMetric();
+}
 
+main();
