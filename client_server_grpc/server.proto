@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package servidor;
+package server;
 
-message PedidoRequest {
+message OrderRequest {
     string nombre_producto = 1;
     double precio = 2;
     string cliente_email = 3;
@@ -14,10 +14,10 @@ message PedidoRequest {
     string region = 9;
 }
 
-message Respuesta {
+message Answer {
     string mensaje = 1;
 }
 
-service Servidor {
-    rpc GestionarPedido (PedidoRequest) returns (Respuesta);
+service Server {
+    rpc ProcessOrder (OrderRequest) returns (Answer);
 }

@@ -1,16 +1,26 @@
 import csv
 import grpc
 from cliente_pb2 import CompraRequest
-from servidor_pb2 import PedidoRequest
-from servidor_pb2_grpc import ServidorStub
+from server_pb2 import OrderRequest
+from server_pb2_grpc import ServerStub
 import time
 
-def realizar_compra(servidor_stub, nombre_producto, precio, cliente_email, metodo_pago, banco, tipo_tarjeta, calle, numero, region):
+def connect_server():
+    """
+    Función para establecer la conexión con el servidor gRPC y devolver el stub.
+    """
+    # Conectar al Servidor gRPC
+    canal_servidor = grpc.insecure_channel('localhost:50052')
+    server_stub = ServerStub(canal_servidor)
+    print("Conectado al servidor gRPC en localhost:50052")
+    return server_stub
+
+def make_order(server_stub, nombre_producto, precio, cliente_email, metodo_pago, banco, tipo_tarjeta, calle, numero, region):
     """
     Función para crear una solicitud de pedido y enviarla al servidor gRPC.
     """
     # Crear la solicitud de pedido para el Servidor gRPC
-    pedido = PedidoRequest(
+    pedido = OrderRequest(
         nombre_producto=nombre_producto,
         precio=precio,
         cliente_email=cliente_email,
@@ -23,10 +33,10 @@ def realizar_compra(servidor_stub, nombre_producto, precio, cliente_email, metod
     )
 
     # Enviar el pedido al Servidor gRPC
-    respuesta = servidor_stub.GestionarPedido(pedido)
-    print(f"Respuesta del servidor: {respuesta.mensaje}")
+    answer = server_stub.ProcessOrder(pedido)
+    print(f"Answer del servidor: {answer.mensaje}")
 
-def procesar_dataset(ruta_dataset, servidor_stub):
+def process_dataset(ruta_dataset, server_stub):
     """
     Función para leer el archivo CSV y procesar cada fila como una compra.
     """
@@ -46,22 +56,13 @@ def procesar_dataset(ruta_dataset, servidor_stub):
             region = row['Region']
 
             # Enviar la compra al servidor
-            realizar_compra(servidor_stub, nombre_producto, precio, cliente_email, metodo_pago, banco, tipo_tarjeta, calle, numero, region)
+            make_order(server_stub, nombre_producto, precio, cliente_email, metodo_pago, banco, tipo_tarjeta, calle, numero, region)
 
             time.sleep(2)
-def conectar_servidor():
-    """
-    Función para establecer la conexión con el servidor gRPC y devolver el stub.
-    """
-    # Conectar al Servidor gRPC
-    canal_servidor = grpc.insecure_channel('localhost:50052')
-    servidor_stub = ServidorStub(canal_servidor)
-    print("Conectado al servidor gRPC en localhost:50052")
-    return servidor_stub
 
 if __name__ == "__main__":
     # Conectar al servidor gRPC
-    servidor_stub = conectar_servidor()
+    server_stub = connect_server()
 
     # Procesar el dataset
-    procesar_dataset('one_data.csv', servidor_stub)
+    process_dataset('one_data.csv', server_stub)

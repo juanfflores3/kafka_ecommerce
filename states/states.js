@@ -1,5 +1,7 @@
 const { Kafka } = require('kafkajs');
 
+////////////////////////////////////////////////////////
+// States
 const states = {
     PROCESSING: 'Processing',
     PREPARATION: 'Preparation',
@@ -22,6 +24,45 @@ const transitions = {
         [states.DELIVERED]: states.FINISHED,
     },
 };
+
+////////////////////////////////////////////////////////
+// Kafka
+
+const kafka = new Kafka({
+    clientId: 'states',
+    brokers: ['localhost:9092']
+});
+
+const consumer = kafka.consumer({groupId: 'orders'});
+const producer = kafka.producer({createPartitioner: Kafka.DefaultPartitioner});
+
+
+const startConsumerKafka = async () => {
+    // Conectar al consumidor de Kafka
+    await consumer.connect();
+    console.log('Conectado al broker de Kafka como consumidor');
+
+    // Suscribirse al tópico de pedidos
+    await consumer.subscribe({topic: 'orders', fromBeginning: true});
+
+    // Leer/Escuchar mensajes de Kafka y procesarlos
+    await consumer.run({
+        eachMessage: async ({topic, partition, message}) => {
+            const pedido = JSON.parse(message.value.toString());
+            console.log(`Mensaje recibido de Kafka en topico ${topic}:`, pedido);
+
+            processOrder(pedido);
+        },
+    });
+};
+
+const startProducerKafka = async () => {
+    await producer.connect();
+    console.log('Conectado al broker de Kafka como productor');
+};
+
+////////////////////////////////////////////////////////
+// Update State
 
 // Función para generar un tiempo aleatorio entre 1 y 15 segundos
 const getRandomTime = () => Math.floor(Math.random() * 5) + 1;
@@ -76,42 +117,12 @@ const processOrder = (order) => {
     setTimeout(updateOrderStatus, initialDelay * 1000);
 };
 
-const kafka = new Kafka({
-    clientId: 'states',
-    brokers: ['localhost:9092']
-});
-
-const consumer = kafka.consumer({groupId: 'pedidos'});
-const producer = kafka.producer({createPartitioner: Kafka.DefaultPartitioner});
-
-
-const iniciarConsumidorKafka = async () => {
-    // Conectar al consumidor de Kafka
-    await consumer.connect();
-    console.log('Conectado al broker de Kafka como consumidor');
-
-    // Suscribirse al tópico de pedidos
-    await consumer.subscribe({topic: 'pedidos', fromBeginning: true});
-
-    // Leer/Escuchar mensajes de Kafka y procesarlos
-    await consumer.run({
-        eachMessage: async ({topic, partition, message}) => {
-            const pedido = JSON.parse(message.value.toString());
-            console.log(`Mensaje recibido de Kafka en topico ${topic}:`, pedido);
-
-            processOrder(pedido);
-        },
-    });
-};
-
-const iniciarProductorKafka = async () => {
-    await producer.connect();
-    console.log('Conectado al broker de Kafka como productor');
-}
+////////////////////////////////////////////////////////
+// Main
 
 async function main () {
-    await iniciarConsumidorKafka();
-    await iniciarProductorKafka();
+    await startConsumerKafka();
+    await startProducerKafka();
 }
 
 main().catch(console.error);
