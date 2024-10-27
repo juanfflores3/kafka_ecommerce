@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3'
 
 services:
   zookeeper:
@@ -29,38 +29,28 @@ services:
       - "9092:9092"
 
   elasticsearch:
-    image: elasticsearch:8.15.3
+    image: elasticsearch:7.17.5
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
-      - "ES_JAVA_OPTS= Xms512m - Xmx512m"
+      - "ES_JAVA_OPTS= -Xms512m -Xmx512m"
     ports:
       - "9200:9200"
     networks:
-      - elastic
+      - elastic_network
   
   kibana:
-    image: kibana:8.15.3
+    image: kibana:7.17.5
     container_name: kibana
+    depends_on:
+      - elasticsearch
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     ports:
       - "5601:5601"
     networks:
-      - elastic
-  
-  elastic-metrics:
-    build: .
-    container_name: elastic-metrics
-    depends_on:
-      - kafka-broker-1
-      - elasticsearch
-    environment:
-      - KAFKA_BROKER=localhost:9092
-      - ELASTIC_HOST=http://elasticsearch:9200
-    networks:
-      - elastic
+      - elastic_network
 
 networks:
-  elastic:
+  elastic_network:
     driver: bridge
