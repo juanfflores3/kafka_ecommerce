@@ -131,7 +131,6 @@ async function processOrder(call, callback) {
   console.log(`Procesando pedido: ${call.request.nombre_producto}`);
   
   sendOrders(order); // Enviar pedido a Kafka
-  await sendMetricsElastic(ordersProcessed); // Enviar métricas a Elasticsearch
 
   callback(null, {mensaje: `Pedido procesado correctamente para ${call.request.cliente_email}`});
 }

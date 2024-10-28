@@ -5,43 +5,6 @@ from server_pb2 import OrderRequest
 from server_pb2_grpc import ServerStub
 import time
 import asyncio
-from datetime import datetime
-from elasticsearch import Elasticsearch
-
-########################################################
-# Elasticsearch
-########################################################
-
-# Conectar a Elasticsearch
-esClient = Elasticsearch(hosts=["http://localhost:9200"])
-
-# Función para enviar métrias a Elasticsearch
-async def sendMetricsElastic(througput):
-    try: 
-        body = {
-            "througput": througput,
-            'timestamp': datetime.now().isoformat()
-        }
-        esClient.index(index="metrics_client", body=body)
-        print(f"Métricas de througput enviadas a Elasticsearch: {througput} pedidos/minuto")
-    except Exception as e:
-        print(f"Error al enviar métricas a Elasticsearch: {e}")
-
-ordersProcessed = 0
-
-# Función para enviar la métrica de Throughput cada minuto
-async def startThroughputMetric():
-    global ordersProcessed
-    while True:
-        # Enviar el throughput de pedidos procesados por minuto
-        await sendMetricsElastic(ordersProcessed)
-        
-        # Reiniciar el contador de pedidos procesados
-        ordersProcessed = 0
-
-        # Esperar un minuto
-        await asyncio.sleep(60)
-
 
 ########################################################
 # gRPC Client
@@ -85,7 +48,6 @@ def make_order(server_stub, nombre_producto, precio,
 
 # Función para leer el archivo CSV y procesar cada fila como una compra.
 async def process_dataset(ruta_dataset, server_stub):
-    global ordersProcessed
     with open(ruta_dataset, 'r') as csvfile:
         reader = csv.DictReader(csvfile)
 
@@ -106,15 +68,14 @@ async def process_dataset(ruta_dataset, server_stub):
             batch.append((nombre_producto, precio, cliente_email, 
                           metodo_pago, banco, tipo_tarjeta, calle, numero, region))
 
-            # Enviar 200 pedidos cada dos segundos
-            if len(batch) == 200:
+            # Enviar 300 pedidos cada 5 segundos
+            if len(batch) == 300:
                 for order in batch:
                     make_order(server_stub, *order)
-                
-                ordersProcessed += 200
-                # Limpiar el lote y esperar dos segundos
+
+                # Limpiar el lote y esperar cinco segundos
                 batch = []
-                time.sleep(2)
+                time.sleep(5)
                 
 
         # Procesar cualquier pedido restante
@@ -128,8 +89,6 @@ async def process_dataset(ruta_dataset, server_stub):
 async def main():
     # Conectar al servidor gRPC
     server_stub = connect_server()
-
-    asyncio.create_task(startThroughputMetric())
 
     # Procesar el dataset
     await process_dataset('dataset_sales.csv', server_stub)
