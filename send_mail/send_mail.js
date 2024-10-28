@@ -38,8 +38,8 @@ const startThroughputMetric = () => {
       // Reiniciar el contador de pedidos procesados
       ordersProcessed = 0; // Reiniciar el contador de pedidos procesados
     }, 60000);
-}
-;
+};
+
 ////////////////////////////////////////////////////////
 // Kafka
 ////////////////////////////////////////////////////////
