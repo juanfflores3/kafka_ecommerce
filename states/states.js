@@ -97,6 +97,11 @@ const startConsumerKafka  = async () => {
     });
 };
 
+const startProducerKafka = async () => {
+    await producer.connect();
+    console.log('Conectado al broker de Kafka como productor');
+};
+
 const sendOrders = async (order) => {
     try {
         await producer.send({
@@ -109,17 +114,12 @@ const sendOrders = async (order) => {
     }
 };
 
-const startProducerKafka = async () => {
-    await producer.connect();
-    console.log('Conectado al broker de Kafka como productor');
-};
-
 ////////////////////////////////////////////////////////
 // Maquina de estado, actualización del estado de un pedido
 ////////////////////////////////////////////////////////
 
-// Función para generar un tiempo aleatorio entre 1 y 15 segundos
-const getRandomTime = () => Math.floor(Math.random() * 5) + 1;
+// Función para generar un tiempo aleatorio entre 1 y 10 segundos
+const getRandomTime = () => Math.floor(Math.random() * 10) + 1;
 
 // Función para procesar la compra y actualizar su estado
 const processOrder = (order) => {

@@ -86,6 +86,8 @@ def process_dataset(ruta_dataset, server_stub):
     with open(ruta_dataset, 'r') as csvfile:
         reader = csv.DictReader(csvfile)
 
+        batch = []
+        
         for row in reader:
             # Extraer los datos de la fila actual
             nombre_producto = row['Product']
@@ -98,11 +100,21 @@ def process_dataset(ruta_dataset, server_stub):
             numero = row['Number']
             region = row['Region']
 
-            # Enviar la compra al servidor
-            make_order(server_stub, nombre_producto, precio,
-                    cliente_email, metodo_pago, banco, tipo_tarjeta, calle, numero, region)
+            batch.append((nombre_producto, precio, cliente_email, 
+                          metodo_pago, banco, tipo_tarjeta, calle, numero, region))
 
-            # time.sleep(2)
+            # Enviar 200 pedidos cada segundo
+            if len(batch) == 200:
+                for order in batch:
+                    make_order(server_stub, *order)
+
+                # Limpiar el lote y esperar un segundo
+                batch = []
+                time.sleep(1)
+
+        # Procesar cualquier pedido restante
+        for order in batch:
+            make_order(server_stub, *order)
 
 ########################################################
 # Main
