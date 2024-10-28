@@ -4,6 +4,7 @@ from cliente_pb2 import CompraRequest
 from server_pb2 import OrderRequest
 from server_pb2_grpc import ServerStub
 import time
+from datetime import datetime
 from elasticsearch import Elasticsearch
 
 ########################################################
@@ -11,7 +12,7 @@ from elasticsearch import Elasticsearch
 ########################################################
 
 # Conectar a Elasticsearch
-esClient = Elasticsearch(hosts=["localhost:9200"])
+esClient = Elasticsearch(hosts=["http://localhost:9200"])
 
 # Función para enviar métrias a Elasticsearch
 def sendMetricsElastic(througput):
@@ -20,7 +21,7 @@ def sendMetricsElastic(througput):
             "througput": througput,
             'timestamp': datetime.now().isoformat()
         }
-        es.index(index="client_metrics", body=body)
+        esClient.index(index="metrics_client", body=body)
         print(f"Métricas de througput enviadas a Elasticsearch: {througput} pedidos/minuto")
     except Exception as e:
         print(f"Error al enviar métricas a Elasticsearch: {e}")
@@ -57,7 +58,8 @@ def connect_server():
 ########################################################
 
 # Función para crear una solicitud de pedido y enviarla al servidor gRPC.
-def make_order(server_stub, nombre_producto, precio, cliente_email, metodo_pago, banco, tipo_tarjeta, calle, numero, region):
+def make_order(server_stub, nombre_producto, precio, 
+               cliente_email, metodo_pago, banco, tipo_tarjeta, calle, numero, region):
     # Crear la solicitud de pedido para el Servidor gRPC
     pedido = OrderRequest(
         nombre_producto=nombre_producto,
@@ -97,9 +99,10 @@ def process_dataset(ruta_dataset, server_stub):
             region = row['Region']
 
             # Enviar la compra al servidor
-            make_order(server_stub, nombre_producto, precio, cliente_email, metodo_pago, banco, tipo_tarjeta, calle, numero, region)
+            make_order(server_stub, nombre_producto, precio,
+                    cliente_email, metodo_pago, banco, tipo_tarjeta, calle, numero, region)
 
-            time.sleep(2)
+            # time.sleep(2)
 
 ########################################################
 # Main
@@ -110,4 +113,4 @@ if __name__ == "__main__":
     server_stub = connect_server()
 
     # Procesar el dataset
-    process_dataset('dataset_sales_500.csv', server_stub)
+    process_dataset('dataset_sales.csv', server_stub)

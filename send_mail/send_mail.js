@@ -1,5 +1,7 @@
 const nodemailer = require('nodemailer');
 const { Kafka } = require('kafkajs');
+const { Client } = require('@elastic/elasticsearch');
+
 ////////////////////////////////////////////////////////
 // Elasticsearch
 ////////////////////////////////////////////////////////
