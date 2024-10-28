@@ -106,15 +106,15 @@ async def process_dataset(ruta_dataset, server_stub):
             batch.append((nombre_producto, precio, cliente_email, 
                           metodo_pago, banco, tipo_tarjeta, calle, numero, region))
 
-            # Enviar 200 pedidos cada segundo
+            # Enviar 200 pedidos cada dos segundos
             if len(batch) == 200:
                 for order in batch:
                     make_order(server_stub, *order)
                 
                 ordersProcessed += 200
-                # Limpiar el lote y esperar un segundo
+                # Limpiar el lote y esperar dos segundos
                 batch = []
-                time.sleep(1)
+                time.sleep(2)
                 
 
         # Procesar cualquier pedido restante
