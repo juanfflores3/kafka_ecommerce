@@ -105,7 +105,7 @@ bash
 node send_mail.js
 ```
 
-2. *Cliente gRPC (gRPC Client)*  
+4. *Cliente gRPC (gRPC Client)*  
 Ya ejecutados todos los microservicios, en una nueva terminal navega hasta el directorio client_server_grpc.  
 Ejecuta el cliente gRPC:
 ```
