@@ -2,7 +2,7 @@
 
 Este proyecto consiste en una aplicación de e-commerce que utiliza kafka para la comunicación entre microservicios. incluye cuatro microservicios principales: client_server_grpc, metrics, send_mail y states, además de servicios de apoyo (kafka, zookeeper, elasticsearch, kibana). a continuación, se detallan las instrucciones para configurar y ejecutar cada servicio.
 
-**[Ver video de implementación]([https://drive.google.com/file/d/1MptzfqksVPbxP4y58kWaXR2s550dLztH/view?usp=sharing](https://drive.google.com/file/d/17AshNZ9DoTMrQEjSEDr-HCo7bd8WjZN5/view?usp=sharing))**
+**[Ver video de implementación](https://drive.google.com/file/d/17AshNZ9DoTMrQEjSEDr-HCo7bd8WjZN5/view?usp=sharing)**
 
 ## Requisitos previos
 
