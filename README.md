@@ -18,30 +18,18 @@ Cada microservicio tiene sus propias dependencias. a continuación, se explican 
 ### 1. client_server_grpc
 
 1. Navega al directorio client_server_grpc:
-   bash
+   ``bash 
    cd client_server_grpc
+   ``
    
 
-2. Instala las dependencias de node.js:
+3. Instala las dependencias de node.js:
 
    bash
    npm install
    
 
-### 2. metrics
-
-1. Navega al directorio metrics:
-   bash
-   cd metrics
-   
-
-2. Instala las dependencias de node.js:
-
-   bash
-   npm install
-   
-
-### 3. send_mail
+### 2. send_mail
 
 1. Navega al directorio send_mail:
    bash
@@ -54,7 +42,7 @@ Cada microservicio tiene sus propias dependencias. a continuación, se explican 
    npm install
    
 
-### 4. states
+### 3. states
 
 1. Navega al directorio states:
    bash
