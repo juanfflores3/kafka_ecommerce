@@ -18,41 +18,44 @@ Cada microservicio tiene sus propias dependencias. a continuación, se explican 
 ### 1. client_server_grpc
 
 1. Navega al directorio client_server_grpc:
-   ``bash 
+   ```
+   bash 
    cd client_server_grpc
-   ``
-   
+   ```
 
 3. Instala las dependencias de node.js:
-
+   ```
    bash
    npm install
-   
+   ```
 
 ### 2. send_mail
 
 1. Navega al directorio send_mail:
+   ```
    bash
    cd send_mail
-   
+   ```
 
 2. Instala las dependencias de node.js:
-
+   ```
    bash
    npm install
-   
+   ```
 
 ### 3. states
 
 1. Navega al directorio states:
+   ```
    bash
    cd states
-   
+   ```
 
 2. Instala las dependencias de node.js:
-
+   ```
    bash
    npm install
+   ```
    
 
 ## Configuración de Servicios de Apoyo
@@ -62,9 +65,10 @@ Para iniciar los servicios de apoyo (Kafka, Zookeeper, Elasticsearch y Kibana), 
 1. Regresa al directorio raíz del proyecto, donde se encuentra el archivo docker-compose.yml.
 2. Ejecuta Docker Compose:
 
+```
 bash
 docker-compose up -d
-
+```
 
 Esto iniciará los contenedores de Kafka, Zookeeper, Elasticsearch y Kibana.
 
@@ -74,50 +78,41 @@ Ejecuta cada microservicio en el siguiente orden:
 
 1. *Servidor gRPC (gRPC Server)*  
 Navega al directorio client_server_grpc.
-
+```
 bash
 cd client_server_grpc
-
+```
 
 Ejecuta el servidor gRPC:
-
+```
 bash
 node server.js
-
+```
 
 
 2. *Cliente gRPC (gRPC Client)*  
 En una nueva terminal, permanece en el directorio client_server_grpc.  
 Ejecuta el cliente gRPC:
-
+```
 bash
 python client.py
-
+```
 
 3. *Servicio de Estados (states)*  
 Abre una nueva terminal y navega al directorio states.
 Ejecuta el microservicio de Estados:
-
+```
 bash
 node states.js
-
+```
 
 4. *Servicio de Envío de Correos (send_mail)*  
 Abre una nueva terminal y navega al directorio send_mail.
 Ejecuta el microservicio de Envío de Correos:
-
+```
 bash
 node send_mail.js
-
-
-5. *Servicio de Métricas (metrics)*  
-Abre una nueva terminal y navega al directorio metrics.
-Ejecuta el microservicio de Métricas:
-
-bash
-node metrics.js
-
-
+```
 ## Monitoreo en Kibana
 
 1. Abre Kibana en tu navegador en [http://localhost:5601](http://localhost:5601).
@@ -126,10 +121,10 @@ node metrics.js
 ## Finalización y Detención de los Servicios
 
 Para detener todos los servicios, navega al directorio raíz del proyecto y utiliza Docker Compose para cerrar los contenedores de apoyo (Kafka, Zookeeper, Elasticsearch y Kibana):
-
+```
 bash
 docker-compose down
-
+```
 
 Esto detendrá todos los servicios y limpiará los contenedores, dejándolos listos para la próxima ejecución.
 
