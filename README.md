@@ -89,16 +89,7 @@ bash
 node server.js
 ```
 
-
-2. *Cliente gRPC (gRPC Client)*  
-En una nueva terminal, permanece en el directorio client_server_grpc.  
-Ejecuta el cliente gRPC:
-```
-bash
-python client.py
-```
-
-3. *Servicio de Estados (states)*  
+2. *Servicio de Estados (states)*  
 Abre una nueva terminal y navega al directorio states.
 Ejecuta el microservicio de Estados:
 ```
@@ -106,17 +97,25 @@ bash
 node states.js
 ```
 
-4. *Servicio de Envío de Correos (send_mail)*  
+3. *Servicio de Envío de Correos (send_mail)*  
 Abre una nueva terminal y navega al directorio send_mail.
 Ejecuta el microservicio de Envío de Correos:
 ```
 bash
 node send_mail.js
 ```
+
+2. *Cliente gRPC (gRPC Client)*  
+Ya ejecutados todos los microservicios, en una nueva terminal navega hasta el directorio client_server_grpc.  
+Ejecuta el cliente gRPC:
+```
+bash
+python client.py
+```
 ## Monitoreo en Kibana
 
 1. Abre Kibana en tu navegador en [http://localhost:5601](http://localhost:5601).
-2. Configura los índices de Elasticsearch (client_metrics, metrics_server, metrics_sentmail, metrics_states) para ver las métricas en el tablero de Kibana.
+2. Configura los índices de Elasticsearch (metrics_server, metrics_sentmail, metrics_states) para ver las métricas en el tablero de Kibana.
 
 ## Finalización y Detención de los Servicios
 
